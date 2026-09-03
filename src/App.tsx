@@ -1,5 +1,6 @@
 import { useState } from 'react'
 import './App.css'
+import logo from './assets/slap-logo.jpg'
 import { useSlapDetector, type Sensitivity } from './useSlapDetector'
 
 const SENSITIVITY_OPTIONS: { value: Sensitivity; label: string }[] = [
@@ -15,6 +16,8 @@ function App() {
   return (
     <div className="app" data-hit={level > 0.4}>
       <div className="glow" style={{ opacity: Math.min(level * 1.4, 1) }} />
+
+      <img className="logo" src={logo} alt="SlapTime" />
 
       <header className="brand">
         <span className="brand-mark">SLAP</span>

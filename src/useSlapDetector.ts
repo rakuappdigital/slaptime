@@ -13,30 +13,26 @@ const THRESHOLD_BY_SENSITIVITY: Record<Sensitivity, number> = {
   high: SILENCE_LEVEL + 0.08,
 }
 
-function playSlapSound(ctx: AudioContext) {
-  const duration = 0.15
-  const bufferSize = ctx.sampleRate * duration
-  const buffer = ctx.createBuffer(1, bufferSize, ctx.sampleRate)
-  const data = buffer.getChannelData(0)
-  for (let i = 0; i < bufferSize; i++) {
-    data[i] = (Math.random() * 2 - 1) * (1 - i / bufferSize)
-  }
+const SLAP_SOUND_URLS = ['/sounds/anime.mp3', '/sounds/anm.mp3']
 
-  const noise = ctx.createBufferSource()
-  noise.buffer = buffer
+async function loadSlapSounds(ctx: AudioContext) {
+  const buffers = await Promise.all(
+    SLAP_SOUND_URLS.map(async (url) => {
+      const response = await fetch(url)
+      const arrayBuffer = await response.arrayBuffer()
+      return ctx.decodeAudioData(arrayBuffer)
+    }),
+  )
+  return buffers
+}
 
-  const bandpass = ctx.createBiquadFilter()
-  bandpass.type = 'bandpass'
-  bandpass.frequency.value = 1200
-  bandpass.Q.value = 0.6
-
-  const gain = ctx.createGain()
-  gain.gain.setValueAtTime(1, ctx.currentTime)
-  gain.gain.exponentialRampToValueAtTime(0.001, ctx.currentTime + duration)
-
-  noise.connect(bandpass).connect(gain).connect(ctx.destination)
-  noise.start()
-  noise.stop(ctx.currentTime + duration)
+function playRandomSlapSound(ctx: AudioContext, buffers: AudioBuffer[]) {
+  if (buffers.length === 0) return
+  const buffer = buffers[Math.floor(Math.random() * buffers.length)]
+  const source = ctx.createBufferSource()
+  source.buffer = buffer
+  source.connect(ctx.destination)
+  source.start()
 }
 
 export function useSlapDetector(sensitivity: Sensitivity) {
@@ -51,6 +47,7 @@ export function useSlapDetector(sensitivity: Sensitivity) {
   const rafRef = useRef<number | null>(null)
   const armedRef = useRef(true)
   const lastSlapAtRef = useRef(0)
+  const soundBuffersRef = useRef<AudioBuffer[]>([])
   const sensitivityRef = useRef<Sensitivity>(sensitivity)
 
   sensitivityRef.current = sensitivity
@@ -77,7 +74,7 @@ export function useSlapDetector(sensitivity: Sensitivity) {
       lastSlapAtRef.current = now
       armedRef.current = false
       setSlapCount((c) => c + 1)
-      playSlapSound(audioCtx)
+      playRandomSlapSound(audioCtx, soundBuffersRef.current)
     }
 
     if (!armedRef.current && peak < REARM_LEVEL) {
@@ -120,6 +117,8 @@ export function useSlapDetector(sensitivity: Sensitivity) {
       analyserRef.current = analyser
       armedRef.current = true
       lastSlapAtRef.current = 0
+
+      soundBuffersRef.current = await loadSlapSounds(audioCtx)
 
       setIsListening(true)
       rafRef.current = requestAnimationFrame(tick)

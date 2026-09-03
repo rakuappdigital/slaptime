@@ -25,6 +25,18 @@
   transition: opacity 80ms ease-out;
 }
 
+.logo {
+  position: absolute;
+  z-index: 2;
+  top: 20px;
+  right: 20px;
+  width: 56px;
+  height: 56px;
+  border-radius: 50%;
+  object-fit: cover;
+  border: 2px solid var(--accent);
+}
+
 .brand {
   position: relative;
   z-index: 1;
