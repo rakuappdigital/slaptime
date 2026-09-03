@@ -11,14 +11,14 @@ export const SOUND_OPTIONS: { id: string; label: string; url: string }[] = [
 ]
 
 const FFT_SIZE = 1024
-const MIN_ABS_PEAK = 0.15
+const MIN_ABS_PEAK = 0.105
 const BASELINE_SMOOTHING = 0.02
 const MIN_MS_BETWEEN_SLAPS = 250
 
 const JUMP_BY_SENSITIVITY: Record<Sensitivity, number> = {
-  low: 0.45,
-  medium: 0.3,
-  high: 0.18,
+  low: 0.315,
+  medium: 0.21,
+  high: 0.126,
 }
 
 async function loadSlapSounds(ctx: AudioContext) {
