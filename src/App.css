@@ -169,6 +169,20 @@
   font-weight: 700;
 }
 
+.sound-select {
+  width: 100%;
+  padding: 12px;
+  border-radius: 10px;
+  border: 1px solid var(--border);
+  background: var(--bg-2);
+  color: var(--text-h);
+  font-family: var(--mono);
+  font-size: 14px;
+  letter-spacing: 1px;
+  text-transform: uppercase;
+  cursor: pointer;
+}
+
 .stats {
   position: relative;
   z-index: 1;

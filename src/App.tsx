@@ -1,7 +1,7 @@
 import { useState } from 'react'
 import './App.css'
 import logo from './assets/slap-logo.jpg'
-import { useSlapDetector, type Sensitivity } from './useSlapDetector'
+import { SOUND_OPTIONS, useSlapDetector, type Sensitivity, type SoundChoice } from './useSlapDetector'
 
 const SENSITIVITY_OPTIONS: { value: Sensitivity; label: string }[] = [
   { value: 'low', label: 'Düşük' },
@@ -11,7 +11,8 @@ const SENSITIVITY_OPTIONS: { value: Sensitivity; label: string }[] = [
 
 function App() {
   const [sensitivity, setSensitivity] = useState<Sensitivity>('medium')
-  const { isListening, level, slapCount, error, start, stop } = useSlapDetector(sensitivity)
+  const [soundChoice, setSoundChoice] = useState<SoundChoice>('random')
+  const { isListening, level, slapCount, error, start, stop } = useSlapDetector(sensitivity, soundChoice)
 
   return (
     <div className="app" data-hit={level > 0.4}>
@@ -50,6 +51,22 @@ function App() {
             </button>
           ))}
         </div>
+      </div>
+
+      <div className="controls">
+        <span className="controls-label">Ses</span>
+        <select
+          className="sound-select"
+          value={soundChoice}
+          onChange={(e) => setSoundChoice(e.target.value)}
+        >
+          <option value="random">Karışık (Random)</option>
+          {SOUND_OPTIONS.map((sound) => (
+            <option key={sound.id} value={sound.id}>
+              {sound.label}
+            </option>
+          ))}
+        </select>
       </div>
 
       <div className="stats">

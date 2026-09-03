@@ -1,6 +1,13 @@
 import { useCallback, useEffect, useRef, useState } from 'react'
 
 export type Sensitivity = 'low' | 'medium' | 'high'
+export type SoundChoice = 'random' | string
+
+export const SOUND_OPTIONS: { id: string; label: string; url: string }[] = [
+  { id: 'anime', label: 'Anime', url: '/sounds/anime.mp3' },
+  { id: 'anm', label: 'Anm', url: '/sounds/anm.mp3' },
+  { id: 'spap', label: 'Spap', url: '/sounds/spap.mp3' },
+]
 
 const FFT_SIZE = 1024
 const SILENCE_LEVEL = 0.08
@@ -13,29 +20,32 @@ const THRESHOLD_BY_SENSITIVITY: Record<Sensitivity, number> = {
   high: SILENCE_LEVEL + 0.08,
 }
 
-const SLAP_SOUND_URLS = ['/sounds/anime.mp3', '/sounds/anm.mp3']
-
 async function loadSlapSounds(ctx: AudioContext) {
-  const buffers = await Promise.all(
-    SLAP_SOUND_URLS.map(async (url) => {
-      const response = await fetch(url)
+  const buffers = new Map<string, AudioBuffer>()
+  await Promise.all(
+    SOUND_OPTIONS.map(async (sound) => {
+      const response = await fetch(sound.url)
       const arrayBuffer = await response.arrayBuffer()
-      return ctx.decodeAudioData(arrayBuffer)
+      buffers.set(sound.id, await ctx.decodeAudioData(arrayBuffer))
     }),
   )
   return buffers
 }
 
-function playRandomSlapSound(ctx: AudioContext, buffers: AudioBuffer[]) {
-  if (buffers.length === 0) return
-  const buffer = buffers[Math.floor(Math.random() * buffers.length)]
+function playSlapSound(ctx: AudioContext, buffers: Map<string, AudioBuffer>, choice: SoundChoice) {
+  if (buffers.size === 0) return
+  const ids = [...buffers.keys()]
+  const id = choice === 'random' ? ids[Math.floor(Math.random() * ids.length)] : choice
+  const buffer = buffers.get(id)
+  if (!buffer) return
+
   const source = ctx.createBufferSource()
   source.buffer = buffer
   source.connect(ctx.destination)
   source.start()
 }
 
-export function useSlapDetector(sensitivity: Sensitivity) {
+export function useSlapDetector(sensitivity: Sensitivity, soundChoice: SoundChoice) {
   const [isListening, setIsListening] = useState(false)
   const [level, setLevel] = useState(0)
   const [slapCount, setSlapCount] = useState(0)
@@ -47,10 +57,12 @@ export function useSlapDetector(sensitivity: Sensitivity) {
   const rafRef = useRef<number | null>(null)
   const armedRef = useRef(true)
   const lastSlapAtRef = useRef(0)
-  const soundBuffersRef = useRef<AudioBuffer[]>([])
+  const soundBuffersRef = useRef<Map<string, AudioBuffer>>(new Map())
   const sensitivityRef = useRef<Sensitivity>(sensitivity)
+  const soundChoiceRef = useRef<SoundChoice>(soundChoice)
 
   sensitivityRef.current = sensitivity
+  soundChoiceRef.current = soundChoice
 
   const tick = useCallback(() => {
     const analyser = analyserRef.current
@@ -74,7 +86,7 @@ export function useSlapDetector(sensitivity: Sensitivity) {
       lastSlapAtRef.current = now
       armedRef.current = false
       setSlapCount((c) => c + 1)
-      playRandomSlapSound(audioCtx, soundBuffersRef.current)
+      playSlapSound(audioCtx, soundBuffersRef.current, soundChoiceRef.current)
     }
 
     if (!armedRef.current && peak < REARM_LEVEL) {
