@@ -25,25 +25,25 @@
   transition: opacity 80ms ease-out;
 }
 
-.logo {
-  position: absolute;
-  z-index: 2;
-  top: 16px;
-  right: 16px;
-  width: 96px;
-  height: 96px;
-  object-fit: contain;
-}
-
 .brand {
   position: relative;
   z-index: 1;
-  display: block;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 16px;
   font-family: var(--mono);
   font-weight: 700;
   font-size: 42px;
   letter-spacing: -1px;
   text-transform: uppercase;
+}
+
+.logo {
+  width: 48px;
+  height: 48px;
+  object-fit: contain;
+  margin-left: 4px;
 }
 
 .brand-mark--accent {

@@ -18,11 +18,10 @@ function App() {
     <div className="app" data-hit={level > 0.4}>
       <div className="glow" style={{ opacity: Math.min(level * 1.4, 1) }} />
 
-      <img className="logo" src={logo} alt="SlapTime" />
-
       <header className="brand">
         <span className="brand-mark">SLAP</span>
         <span className="brand-mark brand-mark--accent">TIME</span>
+        <img className="logo" src={logo} alt="SlapTime" />
       </header>
       <p className="subtitle">CİHAZI TOKATLA; EVET, TOKATLA!</p>
 
