@@ -6,18 +6,19 @@ export type SoundChoice = 'random' | string
 export const SOUND_OPTIONS: { id: string; label: string; url: string }[] = [
   { id: 'anime', label: 'Anime', url: '/sounds/anime.mp3' },
   { id: 'anm', label: 'Anm', url: '/sounds/anm.mp3' },
+  { id: 'anm2', label: 'Anm 2', url: '/sounds/anm2.mp3' },
   { id: 'spap', label: 'Spap', url: '/sounds/spap.mp3' },
 ]
 
 const FFT_SIZE = 1024
-const SILENCE_LEVEL = 0.08
-const REARM_LEVEL = 0.05
+const MIN_ABS_PEAK = 0.15
+const BASELINE_SMOOTHING = 0.02
 const MIN_MS_BETWEEN_SLAPS = 250
 
-const THRESHOLD_BY_SENSITIVITY: Record<Sensitivity, number> = {
-  low: SILENCE_LEVEL + 0.45,
-  medium: SILENCE_LEVEL + 0.25,
-  high: SILENCE_LEVEL + 0.08,
+const JUMP_BY_SENSITIVITY: Record<Sensitivity, number> = {
+  low: 0.45,
+  medium: 0.3,
+  high: 0.18,
 }
 
 async function loadSlapSounds(ctx: AudioContext) {
@@ -57,6 +58,7 @@ export function useSlapDetector(sensitivity: Sensitivity, soundChoice: SoundChoi
   const rafRef = useRef<number | null>(null)
   const armedRef = useRef(true)
   const lastSlapAtRef = useRef(0)
+  const baselineRef = useRef(0)
   const soundBuffersRef = useRef<Map<string, AudioBuffer>>(new Map())
   const sensitivityRef = useRef<Sensitivity>(sensitivity)
   const soundChoiceRef = useRef<SoundChoice>(soundChoice)
@@ -79,7 +81,7 @@ export function useSlapDetector(sensitivity: Sensitivity, soundChoice: SoundChoi
     }
     setLevel(peak)
 
-    const threshold = THRESHOLD_BY_SENSITIVITY[sensitivityRef.current]
+    const threshold = Math.max(baselineRef.current + JUMP_BY_SENSITIVITY[sensitivityRef.current], MIN_ABS_PEAK)
     const now = performance.now()
 
     if (armedRef.current && peak > threshold && now - lastSlapAtRef.current > MIN_MS_BETWEEN_SLAPS) {
@@ -89,8 +91,12 @@ export function useSlapDetector(sensitivity: Sensitivity, soundChoice: SoundChoi
       playSlapSound(audioCtx, soundBuffersRef.current, soundChoiceRef.current)
     }
 
-    if (!armedRef.current && peak < REARM_LEVEL) {
+    if (!armedRef.current && peak < baselineRef.current + JUMP_BY_SENSITIVITY[sensitivityRef.current] * 0.3) {
       armedRef.current = true
+    }
+
+    if (armedRef.current) {
+      baselineRef.current += (peak - baselineRef.current) * BASELINE_SMOOTHING
     }
 
     rafRef.current = requestAnimationFrame(tick)
@@ -129,6 +135,7 @@ export function useSlapDetector(sensitivity: Sensitivity, soundChoice: SoundChoi
       analyserRef.current = analyser
       armedRef.current = true
       lastSlapAtRef.current = 0
+      baselineRef.current = 0
 
       soundBuffersRef.current = await loadSlapSounds(audioCtx)
 

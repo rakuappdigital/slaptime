@@ -1,6 +1,6 @@
 import { useState } from 'react'
 import './App.css'
-import logo from './assets/slap-logo.jpg'
+import logo from './assets/slap-logo.png'
 import { SOUND_OPTIONS, useSlapDetector, type Sensitivity, type SoundChoice } from './useSlapDetector'
 
 const SENSITIVITY_OPTIONS: { value: Sensitivity; label: string }[] = [

@@ -28,13 +28,11 @@
 .logo {
   position: absolute;
   z-index: 2;
-  top: 20px;
-  right: 20px;
-  width: 56px;
-  height: 56px;
-  border-radius: 50%;
-  object-fit: cover;
-  border: 2px solid var(--accent);
+  top: 16px;
+  right: 16px;
+  width: 96px;
+  height: 96px;
+  object-fit: contain;
 }
 
 .brand {
