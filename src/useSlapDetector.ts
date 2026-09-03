@@ -17,8 +17,8 @@ const MIN_MS_BETWEEN_SLAPS = 250
 // RMS (ortalama enerji) tabanlı eşik — tekil gürültü sıçramalarına değil
 // buffer boyunca sürekli yüksek enerjiye (gerçek darbe) bakar.
 const RMS_THRESHOLD_BY_SENSITIVITY: Record<Sensitivity, number> = {
-  low: 0.28,
-  high: 0.196,
+  low: 0.196,
+  high: 0.1372,
 }
 
 async function loadSlapSounds(ctx: AudioContext) {
