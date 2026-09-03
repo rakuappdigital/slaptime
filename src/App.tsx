@@ -24,7 +24,7 @@ function App() {
         <span className="brand-mark">SLAP</span>
         <span className="brand-mark brand-mark--accent">TIME</span>
       </header>
-      <p className="subtitle">cihaza vur, ses tetiklensin</p>
+      <p className="subtitle">CİHAZI TOKATLA; EVET, TOKATLA!</p>
 
       <div className="ring-wrap">
         <div className="ring" style={{ transform: `scale(${1 + level * 0.35})`, opacity: 0.35 + level * 0.65 }} />
